@@ -1,0 +1,22 @@
+{
+  "acl": {
+    "enabled": true,
+    "down_policy": "async-cache",
+    "default_policy": "deny"
+  },
+  "ca_file": "./ca.pem",
+  "verify_outgoing": true,
+  "datacenter": "zero-trust-378024",
+  "encrypt": "ObUNUyMOY9g0ImHqnl5Gnw==",
+  "encrypt_verify_incoming": true,
+  "encrypt_verify_outgoing": true,
+  "server": false,
+  "log_level": "INFO",
+  "ui": true,
+  "retry_join": [
+    "zero-trust-378024.private.consul.8749b210-dc69-4b12-9213-bc4522436e29.aws.hashicorp.cloud"
+  ],
+  "auto_encrypt": {
+    "tls": true
+  }
+}

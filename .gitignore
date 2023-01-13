@@ -111,6 +111,12 @@ terraform.original
 terraform.tfstate*
 terraform.auto.tfvars
 
+#cert file
+############################
+ca.pem
+private.key
+setenv.sh
+
 # deprecated items in dev #
 ###########################
 removed
