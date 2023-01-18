@@ -253,6 +253,13 @@ resource "null_resource" "main" {
   }
 }
 
+# use random password instead of the default password
+resource "random_password" "db_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
 resource "aws_db_instance" "products" {
   count                  = length(var.public_subnets_cidr)
   allocated_storage      = 10
@@ -262,7 +269,8 @@ resource "aws_db_instance" "products" {
   db_name                = "products"
   identifier             = "products"
   username               = var.database_username
-  password               = var.database_password
+  #password               = var.database_password
+  password = random_password.db_password.result
   db_subnet_group_name   = aws_db_subnet_group.db_sng[count.index].name
   vpc_security_group_ids = [aws_security_group.database.id]
   publicly_accessible    = true
