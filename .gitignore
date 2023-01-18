@@ -117,6 +117,14 @@ ca.pem
 private.key
 setenv.sh
 
+
+# consul client config file
+############################
+client_token
+consul_acl_token.json
+client_config.json
+client_config.json.sample
+
 # deprecated items in dev #
 ###########################
 removed

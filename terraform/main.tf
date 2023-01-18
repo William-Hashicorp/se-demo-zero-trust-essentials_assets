@@ -1,6 +1,17 @@
+ terraform {
+  backend "remote" {
+    hostname = "app.terraform.io"
+    organization = "William-Hashicorp"
+    workspaces {
+      name = "zts-demo-01"
+            }
+  }
+} 
+
+# decalre module
 module "hashicups" {
   source = "./hashicups"
-}
+  }
 
 module "hcp" {
   source = "./hcp"
@@ -30,6 +41,10 @@ module "hcp_vault" {
   product_database_address  = module.hashicups.product_database_address
   product_database_password = module.hashicups.db_password
   target_ec2_attributes     = module.hashicups.target_ec2_attributes
+
+  # decalre the use of one module's variable outputs in another module
+  # this is the ssh key used to remote connect to hosts
+  my_private_key            = module.hashicups.private_key
 }
 
 module "hcp_boundary" {
@@ -58,4 +73,12 @@ module "hcp_consul" {
   token                 = module.hcp.consul_root_token
   target_ec2_unique     = module.hashicups.target_ec2
   target_ec2_attributes = module.hashicups.target_ec2_attributes
+
+  # decalre the use of one module's variable outputs in another module
+  my_private_key        = module.hashicups.private_key
+  
+  # used to generate consul client config file for hosts
+  consul_ca_file        = module.hcp.consul_ca_file
+  consul_config_file    = module.hcp.consul_config_file
+  consul_secret_id      = module.hcp.consul_secret_id
 }

@@ -32,14 +32,17 @@ locals {
   products_creds_path = "${vault_mount.postgres.path}/creds/product"
 }
 
+# create role for dynamic db credential
+# ttl is 7 days
+# set the default ttl to 900 seconds for demo purpose.
 resource "vault_database_secret_backend_role" "product" {
   backend               = vault_mount.postgres.path
   name                  = "product"
   db_name               = vault_database_secret_backend_connection.postgres.name
   creation_statements   = ["CREATE ROLE \"{{username}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"{{username}}\";"]
   revocation_statements = ["ALTER ROLE \"{{username}}\" NOLOGIN;"]
-  default_ttl           = 604800
-  max_ttl               = 604800
+  default_ttl           = 300
+  max_ttl               = 900
 }
 
 data "vault_policy_document" "product" {
@@ -50,6 +53,7 @@ data "vault_policy_document" "product" {
   }
 }
 
+# policy definition for dynamic db secrets
 resource "vault_policy" "product" {
   name   = "product"
   policy = data.vault_policy_document.product.hcl
@@ -70,9 +74,9 @@ resource "vault_approle_auth_backend_role_secret_id" "id" {
   role_name = vault_approle_auth_backend_role.agent.role_name
 }
 
-data "local_file" "private_ssh_key" {
-  filename = "./private.key"
-}
+# data "local_file" "private_ssh_key" {
+#   filename = "./private.key"
+# }
 
 resource "vault_mount" "kvv2" {
   path        = "secret"
@@ -89,7 +93,8 @@ resource "vault_kv_secret_v2" "ssh_secret" {
   data_json = jsonencode(
     {
       "username"    = "ubuntu",
-      "private_key" = "${data.local_file.private_ssh_key.content}"
+      #"private_key" = "${data.local_file.private_ssh_key.content}"
+      "private_key" = "${var.my_private_key}"
     }
   )
 }
@@ -115,7 +120,7 @@ resource "vault_token" "boundary_credentials_store" {
   ttl               = "120m"
   period            = "120m"
   metadata = {
-    "purpose" = "boundary-credentials-library"
+    "purpose" = "boundary-credentials-library, and dynamic db credential"
   }
 }
 
@@ -142,3 +147,20 @@ resource "vault_token" "payments_transit_encryption" {
     "purpose" = "Hashicups Payments Encryption"
   }
 }
+
+# generate a longer ttl token for consul_template 
+# we can also use vault agent to replace the token in consul_template env file "consul-template.env".
+#
+# note that we need the 2 following polices to start the consul_template service 
+resource "vault_token" "db_dynamic_secret_token" {
+  policies          = [vault_policy.product_2.name,vault_policy.boundary_controller.name]
+  no_default_policy = true
+  no_parent         = true
+  renewable         = true
+  ttl               = "48h"
+  period            = "48h"
+  metadata = {
+    "purpose" = "token for consul_template to generate dynamic secrets of database"
+  }
+}
+

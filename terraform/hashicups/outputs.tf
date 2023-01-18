@@ -83,3 +83,7 @@ output "aws_ec2_security_group_id" {
   value = aws_security_group.hashicups.id
 }
 
+output "private_key" {
+  value     = tls_private_key.main.private_key_pem
+  sensitive = true
+}

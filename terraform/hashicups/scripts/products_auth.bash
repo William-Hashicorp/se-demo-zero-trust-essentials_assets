@@ -27,6 +27,7 @@ EOF
 
 sudo mv -f /home/ubuntu/conf.json $APP_HOME/.
 
+# osometime, the go does not work, need to reboot the instance.
 APP_FILE=$APP_HOME/bin/amd64/product-api
 
 if [ ! -f "$APP_FILE" ]; then

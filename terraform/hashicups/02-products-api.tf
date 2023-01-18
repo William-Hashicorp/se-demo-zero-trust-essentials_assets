@@ -11,7 +11,8 @@ resource "null_resource" "configure-product-api" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("./private.key")
+      # private_key = file("./private.key")
+      private_key = "${tls_private_key.main.private_key_pem}"
       host        = aws_instance.hashicups_products_api[0].public_ip
     }
   }
@@ -26,7 +27,8 @@ resource "null_resource" "configure-product-api" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("./private.key")
+      #private_key = file("./private.key")
+      private_key = "${tls_private_key.main.private_key_pem}"
       host        = aws_instance.hashicups_products_api[0].public_ip
     }
   }

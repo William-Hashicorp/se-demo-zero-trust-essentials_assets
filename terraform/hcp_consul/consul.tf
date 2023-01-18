@@ -129,6 +129,24 @@ resource "null_resource" "consul_client_data" {
     command = "echo \"${data.consul_acl_token_secret_id.read.secret_id}\" > client_config/client_token"
   }
 
+# prepare client config files for consul
+  provisioner "local-exec" {
+    command = "echo \"${var.consul_ca_file}\" | base64 --decode > client_config/ca.pem"
+  }
+
+  provisioner "local-exec" {
+    command = "echo \"${var.consul_config_file}\" | base64 --decode | jq > client_config/client_config.json"
+  }
+
+  provisioner "local-exec" {
+    command = "echo \"${var.consul_secret_id}\" > client_config/consul_acl_token.json"
+  }
+
+  provisioner "local-exec" {
+    command = "chmod 600 client_config/ca.pem"
+  }
+
+# zip the file and ready to upload
   provisioner "local-exec" {
     command = "tar cvfz client_config.tar.gz client_config/*"
   }
@@ -145,11 +163,13 @@ resource "null_resource" "consul_client_config_files" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("./private.key")
+      # private_key = file("./private.key")
+      private_key = "${var.my_private_key}"
       host        = each.value.ip
     }
   }
 
+# upload config package file
   provisioner "file" {
     source      = "./client_config.tar.gz"
     destination = "/home/ubuntu/client_config.tar.gz"
@@ -157,7 +177,8 @@ resource "null_resource" "consul_client_config_files" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("./private.key")
+      # private_key = file("./private.key")
+      private_key = "${var.my_private_key}"
       host        = each.value.ip
     }
   }
@@ -169,7 +190,8 @@ resource "null_resource" "consul_client_config_files" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("./private.key")
+      # private_key = file("./private.key")
+      private_key = "${var.my_private_key}"
       host        = each.value.ip
     }
   }
@@ -191,7 +213,8 @@ resource "null_resource" "consul_client_config" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file("./private.key")
+      # private_key = file("./private.key")
+      private_key = "${var.my_private_key}"
       host        = each.value
     }
 

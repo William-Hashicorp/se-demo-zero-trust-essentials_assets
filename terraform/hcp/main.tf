@@ -61,6 +61,11 @@ resource "hcp_vault_cluster" "main" {
   public_endpoint = true
 }
 
+# An admin token may be generated during a terraform plan if the current token is expiring.
+# Since the Plan phase does not save any state, the Apply phase saves a different
+# generated token, and the token generated during Plan ends up orphaned. 
+# It will expire in six hours.
+
 resource "hcp_vault_cluster_admin_token" "vault" {
   cluster_id = hcp_vault_cluster.main.cluster_id
 }
@@ -71,19 +76,26 @@ resource "null_resource" "consul_client_config" {
     hcp_consul_cluster.main
   ]
 
-  provisioner "local-exec" {
-    command = "echo \"${hcp_consul_cluster.main.consul_ca_file}\" | base64 --decode > client_config/ca.pem"
-  }
+  # provisioner "local-exec" {
+  #   command = "echo \"${hcp_consul_cluster.main.consul_ca_file}\" | base64 --decode > client_config/ca.pem"
+  # }
 
-  provisioner "local-exec" {
-    command = "echo \"${hcp_consul_cluster.main.consul_config_file}\" | base64 --decode | jq > client_config/client_config.json"
-  }
+  # provisioner "local-exec" {
+  #   command = "echo \"${hcp_consul_cluster.main.consul_config_file}\" | base64 --decode | jq > client_config/client_config.json"
+  # }
 
-  provisioner "local-exec" {
-    command = "echo \"${hcp_consul_cluster_root_token.token.secret_id}\" > client_config/consul_acl_token.json"
-  }
+  # provisioner "local-exec" {
+  #   command = "echo \"${hcp_consul_cluster_root_token.token.secret_id}\" > client_config/consul_acl_token.json"
+  # }
 
-  provisioner "local-exec" {
-    command = "chmod 600 client_config/ca.pem"
+  # provisioner "local-exec" {
+  #   command = "chmod 600 client_config/ca.pem"
+  # }
+}
+
+# for TFC, force TFC to read outputs.tf changes and refresh state.
+resource "random_pet" "tfc_refresh" {
+  keepers = {
+    refresh : 1
   }
 }

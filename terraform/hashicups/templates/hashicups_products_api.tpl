@@ -45,6 +45,7 @@ sudo mv product-api-go $APP_HOME
 sudo chown -R ubuntu:ubuntu $APP_HOME
 cd $APP_HOME
 
+# sometimes the go does not work, needs to reboot ec2 instance, and then manually compile this.
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/amd64/product-api
 
 # Service unit for Hashicups Product API

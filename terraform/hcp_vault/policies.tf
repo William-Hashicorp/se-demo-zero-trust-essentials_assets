@@ -52,5 +52,19 @@ path "transit/encrypt/zero-trust-payments" {
 path "transit/decrypt/zero-trust-payments" {
    capabilities = [ "update" ]
 }
+path "hashicups/database/creds/product" {
+  capabilities = [ "read" ]
+}
 EOT
 }
+
+resource "vault_policy" "product_2" {
+  name = "hashicups-db-dynamic-secrets"
+
+  policy = <<EOT
+path "hashicups/database/creds/product" {
+  capabilities = [ "read" ]
+}
+EOT
+}
+

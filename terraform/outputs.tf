@@ -144,3 +144,32 @@ output "consul_url" {
 output "consul_datacenter" {
   value = module.hcp.consul_datacenter
 }
+
+# need to declare output in root module so that we can access with -raw 
+# declare additional consul data to generate client config files
+output "consul_ca_file" {
+  value     = module.hcp.consul_ca_file
+    sensitive = true  
+}
+
+output "consul_config_file" {
+  value     = module.hcp.consul_config_file
+    sensitive = true
+}
+
+output "consul_secret_id" {
+  value     = module.hcp.consul_secret_id
+    sensitive = true
+}
+
+output "hvn_id" {
+    value = module.hcp.hvn_id
+}
+
+# declare private key output 
+output "private_key" {
+  sensitive = true
+  value     = module.hashicups.private_key
+}
+
+

@@ -32,3 +32,9 @@ variable "product_database_port" {
   description = "Port for the product PostgreSQL database. Default 5432."
   default     = "5432"
 }
+
+variable "my_private_key" {
+  type        = string
+  description = "Private key generated for hashicups."
+  sensitive   = true
+}

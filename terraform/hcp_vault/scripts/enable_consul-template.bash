@@ -5,7 +5,8 @@
 # the inputs are not there, the Vault agent fails to render secrets.
 
 sudo apt install consul-template -y
- 
+
+# generate conl-template service config file 
 cat << EOF > /tmp/consul-template.service
 [Unit]
 Description=Vault consul-template
@@ -21,9 +22,11 @@ KillSignal=SIGTERM
 WantedBy=multi-user.target
 EOF
 
+# move service description to systemd 
 sudo chown root:root /tmp/consul-template.service
 sudo mv /tmp/consul-template.service /usr/lib/systemd/system/consul-template.service
 
+# prepare vault address, namespace and credential for consul template to talk to vault
 cat << EOF > /tmp/consul-template.env
 VAULT_API_ADDR=$VAULT_ADDR
 VAULT_NAMESPACE=$VAULT_NAMESPACE
@@ -33,6 +36,9 @@ EOF
 sudo chown vault:vault /tmp/consul-template.env
 sudo mv /tmp/consul-template.env /etc/vault.d/consul-template.env
 
+# prepare the consul-template config file.
+# retry to connect to vault for every 5min
+# restart the hashicups-product-api.service service when the new credential changes
 cat << EOF > /tmp/consul-template.hcl
 vault {
   retry {
@@ -49,11 +55,14 @@ template {
     command = [ "systemctl", "restart", "hashicups-product-api.service" ]
   }
 }
+log_level = "trace"
 EOF
 
 sudo chown vault:vault /tmp/consul-template.hcl
 sudo mv /tmp/consul-template.hcl /etc/vault.d/consul-template.hcl
 
+# prepare template file.
+# read new credential from path "hashicups/database/creds/product"
 cat << EOF > /tmp/product-api-db.ctmpl
 {{ with secret "hashicups/database/creds/product" }}
 {
